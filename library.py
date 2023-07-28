@@ -1,28 +1,31 @@
 def transcription(seq):
 
 	#converts DNA Sequence to mRNA sequence
-	#The conversion is as follows:
-	#A -> U
-	#T -> A
-	#G -> C
-	#C -> G
+	#The conversion is basically that thymine is replaced with uracil during the transcription process
 
 	mrna_seq = ""
-	dna = 'ATGC'
-	rna = 'UACG'
+	seq = seq.upper()
 	for i in seq:
 		if i not in "ATGC":
 			return "INVALID SEQUENCE"
 		else:
-			mrna_seq+=rna[dna.index(i)]
+			if i == 'T':
+				mrna_seq+='U'
+			else:
+				mrna_seq+=i
+			#mrna_seq+=rna[dna.index(i)]
 	return mrna_seq
 
-'''
+def invert(seq): #basically gives the antisense strand for a said sequence
+	dna,a_s = 'ATGC','TACG'
+	return "".join([a_s[dna.index(i)] for i in seq[::-1]]) if len([i for i in seq if i in "ATGC"]) == len(seq) else "INVALID SEQUENCE"
+#print(invert('ATGC'))
 
+'''
 Standard RNA codon table
 
 the leader sequence ends before the codon AUG which corresponds to the amino acid Methionine
-The stop codons are UAA, UGA, UAG
+The stop codons are UAA, UGA, UAG (marked by X in this code, might change in the future)
 the other codons are 
 A / GCU, GCC, GCA, GCG -> Alanine
 I / AUU, AUC, AUA -> Isoleucine
@@ -80,12 +83,31 @@ for i in codons_text:
 #print(codon)
 
 def translation(seq):
-	#roughly works, still have to code in how to identify starting codon and stop codon
-	polypeptide_sequence = ''
-	seq = [seq[i:i+3] for i in range(0,len(seq),3)]
-	for i in seq:
-		polypeptide_sequence+=codon[i]
-	return polypeptide_sequence
 
-print(translation(transcription("TACTAG")))
+	#the translation starts at codon AUG.
+	if seq == "INVALID SEQUENCE":
+		return "INVALID SEQUENCE"
+	seq = seq.upper()
+	start = seq.find("AUG")
+	if start != -1:
+		polypeptide_sequence = ''
+		seq = [seq[i:i+3] for i in range(start,len(seq),3)]
+		for i in seq:
+			# stop sequences, stop the reading if it encounters a stop protein, also could just add a * but for now it just stops
+			if i in ['UAA','UAG','UGA']:
+				break
+			if len(i) == 3:
+				polypeptide_sequence+=codon[i]
+		return polypeptide_sequence
 
+#print(translation((transcription("AGGACGGGCTAACTCCGCTCGTCACAAAGCGCAATGCAGCTATGGCAGATGTTCATGCCG"))))
+#print(translation((transcription("TACATGCCATACGAGACGAGCGCGCCTAAGCGGCGCAGACTCATGGTCATT"))))
+#print(transcription("ATGGCCGGTTATTAAGCA"))
+#print(translation("AUGUUUUGG"))
+#print(translation("ggaugcccaaauaa"))
+#print(transcription("TTATGCATC"))
+#print(translation('AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA'))
+
+adenovirus5 = open('porcine_adenovirus_5.txt')
+av5genome  = "".join([i for i in adenovirus5.read()  if i in 'ATGC'])
+#print(translation(transcription(av5genome[418-1:939])))
